@@ -49,37 +49,44 @@ class OrderController extends Controller
 
         $restaurant = Restaurant::findOrFail($validated['restaurant_id']);
         
+        // Calculate subtotal before creating the order
+        $subtotal = 0;
+        $menuItemsData = [];
+        foreach ($validated['items'] as $item) {
+            $menuItem = MenuItem::findOrFail($item['menu_item_id']);
+            $itemSubtotal = $menuItem->price * $item['quantity'];
+            $subtotal += $itemSubtotal;
+            
+            $menuItemsData[] = [
+                'menuItem' => $menuItem,
+                'item' => $item,
+                'itemSubtotal' => $itemSubtotal,
+            ];
+        }
+        
         $order = Order::create([
             'restaurant_id' => $validated['restaurant_id'],
             'order_number' => Order::generateOrderNumber(),
             'customer_name' => $validated['customer_name'],
             'customer_phone' => $validated['customer_phone'],
             'delivery_address' => $validated['delivery_address'],
-            'delivery_fee' => $restaurant->delivery_fee,
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'pending',
-        ]);
-
-        $subtotal = 0;
-        foreach ($validated['items'] as $item) {
-            $menuItem = MenuItem::findOrFail($item['menu_item_id']);
-            $itemSubtotal = $menuItem->price * $item['quantity'];
-            $subtotal += $itemSubtotal;
-
-            $order->orderItems()->create([
-                'menu_item_id' => $item['menu_item_id'],
-                'item_name' => $menuItem->name,
-                'price' => $menuItem->price,
-                'quantity' => $item['quantity'],
-                'subtotal' => $itemSubtotal,
-            ]);
-        }
-
-        $order->update([
             'subtotal' => $subtotal,
+            'delivery_fee' => $restaurant->delivery_fee,
             'total' => $subtotal + $restaurant->delivery_fee,
+            'notes' => $validated['notes'] ?? null,
             'status' => 'confirmed',
         ]);
+
+        // Create order items
+        foreach ($menuItemsData as $data) {
+            $order->orderItems()->create([
+                'menu_item_id' => $data['item']['menu_item_id'],
+                'item_name' => $data['menuItem']->name,
+                'price' => $data['menuItem']->price,
+                'quantity' => $data['item']['quantity'],
+                'subtotal' => $data['itemSubtotal'],
+            ]);
+        }
 
         return redirect()->route('orders.index')->with('success', 'Order created successfully!');
     }
