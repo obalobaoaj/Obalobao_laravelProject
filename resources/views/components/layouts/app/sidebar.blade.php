@@ -133,11 +133,20 @@
                             <flux:navlist.item
                                 icon="folder-git-2"
                                 :href="route('restaurants.index')"
-                                :current="request()->routeIs('restaurants.*')"
+                                :current="request()->routeIs('restaurants.*') && !request()->routeIs('restaurants.trash')"
                                 wire:navigate
                                 class="ios-nav-item mx-2"
                             >
                                 {{ __('Restaurants') }}
+                            </flux:navlist.item>
+                            <flux:navlist.item
+                                icon="archive-box"
+                                :href="route('restaurants.trash')"
+                                :current="request()->routeIs('restaurants.trash')"
+                                wire:navigate
+                                class="ios-nav-item mx-2"
+                            >
+                                {{ __('Trash') }}
                             </flux:navlist.item>
                             <flux:navlist.item
                                 icon="shopping-cart"

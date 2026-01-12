@@ -199,9 +199,9 @@
             </div>
         </nav>
 
-        <!-- Hero Section -->
+        
         <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-            <!-- Animated Background Elements -->
+           
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
                 <div class="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-float"></div>
                 <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>

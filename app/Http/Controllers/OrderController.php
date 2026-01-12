@@ -85,7 +85,7 @@ class OrderController extends Controller
                 'price' => $data['menuItem']->price,
                 'quantity' => $data['item']['quantity'],
                 'subtotal' => $data['itemSubtotal'],
-            ]);
+        ]);
         }
 
         return redirect()->route('orders.index')->with('success', 'Order created successfully!');

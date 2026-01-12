@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/menu-items/{menuItem}', [MenuItemController::class, 'destroy'])->name('menu-items.destroy');
 
     Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
+    Route::get('/restaurants/trash', [RestaurantController::class, 'trash'])->name('restaurants.trash');
+    Route::post('/restaurants/{restaurant}/restore', [RestaurantController::class, 'restore'])->name('restaurants.restore');
+    Route::delete('/restaurants/{restaurant}/force-delete', [RestaurantController::class, 'forceDelete'])->name('restaurants.force-delete');
+    Route::get('/restaurants/export/pdf', [RestaurantController::class, 'exportPdf'])->name('restaurants.export');
     Route::post('/restaurants', [RestaurantController::class, 'store'])->name('restaurants.store');
     Route::put('/restaurants/{restaurant}', [RestaurantController::class, 'update'])->name('restaurants.update');
     Route::delete('/restaurants/{restaurant}', [RestaurantController::class, 'destroy'])->name('restaurants.destroy');

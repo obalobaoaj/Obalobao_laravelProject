@@ -209,7 +209,7 @@
         <div class="grid gap-6 lg:grid-cols-2">
             <div class="ios-card glass-card animate-fade-in rounded-3xl p-6" style="animation-delay: 0.4s">
                 <h2 class="mb-6 text-xl font-bold text-neutral-900 dark:text-white">Add Restaurant</h2>
-                <form action="{{ route('restaurants.store') }}" method="POST" class="grid gap-5">
+                <form action="{{ route('restaurants.store') }}" method="POST" enctype="multipart/form-data" class="grid gap-5">
                     @csrf
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
@@ -249,6 +249,14 @@
                         <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Address</label>
                         <input type="text" name="address" value="{{ old('address') }}" required placeholder="123 Food Street, City" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
                         @error('address')
+                            <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Photo (JPG/PNG, max 2MB)</label>
+                        <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
+                        @error('photo')
                             <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
@@ -326,20 +334,55 @@
 
         <div class="ios-card glass-card relative h-full flex-1 overflow-hidden rounded-3xl animate-fade-in" style="animation-delay: 0.6s">
             <div class="flex h-full flex-col p-6">
-                <div class="mb-6 flex items-center justify-between">
+                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Restaurants Directory</h2>
-                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Secondary entity with related menu item count</p>
+                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Search, filter, export, and manage trash.</p>
                     </div>
-                    <a href="{{ route('dashboard') }}" class="ios-button rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
-                        ← Back to dashboard
-                    </a>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="{{ route('restaurants.trash') }}" class="ios-button rounded-2xl bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
+                            Trash ({{ $filters['trashCount'] ?? 0 }})
+                        </a>
+                        <a href="{{ route('restaurants.export', ['q' => request('q'), 'status' => request('status'), 'cuisine' => request('cuisine')]) }}" class="ios-button rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
+                            Export PDF
+                        </a>
+                        <a href="{{ route('dashboard') }}" class="ios-button rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
+                            ← Back to dashboard
+                        </a>
+                    </div>
                 </div>
+
+                <form method="GET" class="mb-4 grid gap-3 md:grid-cols-4 items-center">
+                    <div class="md:col-span-2">
+                        <input type="text" name="q" value="{{ $search }}" placeholder="Search name, email, or address" class="w-full rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 text-sm shadow-sm focus:border-blue-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-white">
+                    </div>
+                    <select name="cuisine" class="rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 text-sm shadow-sm focus:border-blue-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-white">
+                        <option value="">All cuisines</option>
+                        @foreach ($filters['cuisines'] as $option)
+                            <option value="{{ $option }}" @selected($cuisine === $option)>{{ $option }}</option>
+                        @endforeach
+                    </select>
+                    <select name="status" class="rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 text-sm shadow-sm focus:border-blue-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-white">
+                        <option value="">All statuses</option>
+                        @foreach ($filters['statuses'] as $option)
+                            <option value="{{ $option }}" @selected($status === $option)>{{ ucfirst($option) }}</option>
+                        @endforeach
+                    </select>
+                    <div class="flex gap-3 md:col-span-2">
+                        <button type="submit" class="ios-button flex-1 rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-neutral-800">
+                            Apply filters
+                        </button>
+                        <a href="{{ route('restaurants.index') }}" class="ios-button rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-neutral-700 shadow hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-100">
+                            Clear
+                        </a>
+                    </div>
+                </form>
 
                 <div class="flex-1 overflow-auto rounded-2xl">
                     <table class="w-full min-w-full">
                         <thead>
                             <tr class="border-b border-neutral-200/50 bg-white/30 backdrop-blur-sm dark:border-neutral-700/50 dark:bg-neutral-800/30">
+                                <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Profile</th>
                                 <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Name</th>
                                 <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Cuisine</th>
                                 <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
@@ -350,6 +393,15 @@
                         <tbody>
                             @forelse ($restaurants as $restaurant)
                                 <tr class="table-row border-b border-neutral-100/50 dark:border-neutral-800/50">
+                                    <td class="px-5 py-4">
+                                        @if($restaurant->photo_url)
+                                            <img src="{{ $restaurant->photo_url }}" alt="{{ $restaurant->name }}" class="h-12 w-12 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-neutral-800">
+                                        @else
+                                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-neutral-800">
+                                                {{ strtoupper(mb_substr($restaurant->name, 0, 1)) }}
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-5 py-4">
                                         <div class="text-sm font-semibold text-neutral-900 dark:text-white">{{ $restaurant->name }}</div>
                                         <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ $restaurant->address }}</p>
@@ -416,7 +468,7 @@
                 </button>
             </div>
             <div class="p-8">
-                <form action="{{ route('restaurants.update', $restaurant) }}" method="POST" class="grid gap-5">
+                <form action="{{ route('restaurants.update', $restaurant) }}" method="POST" enctype="multipart/form-data" class="grid gap-5">
                     @csrf
                     @method('PUT')
 
@@ -445,6 +497,28 @@
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Address</label>
                         <input type="text" name="address" value="{{ old('address', $restaurant->address) }}" required class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:focus:bg-neutral-800">
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Photo (JPG/PNG, max 2MB)</label>
+                        <div class="mb-3 flex items-center gap-4">
+                            @if($restaurant->photo_url)
+                                <img src="{{ $restaurant->photo_url }}" alt="{{ $restaurant->name }}" class="h-16 w-16 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-neutral-800">
+                                <div>
+                                    <p class="text-xs font-medium text-neutral-600 dark:text-neutral-400">Current photo</p>
+                                    <p class="text-xs text-neutral-500 dark:text-neutral-500">{{ basename($restaurant->photo_path) }}</p>
+                                </div>
+                            @else
+                                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg font-bold text-white shadow-md ring-2 ring-white dark:ring-neutral-800">
+                                    {{ strtoupper(mb_substr($restaurant->name, 0, 1)) }}
+                                </div>
+                                <p class="text-xs text-neutral-500 dark:text-neutral-400">No photo uploaded</p>
+                            @endif
+                        </div>
+                        <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
+                        @error('photo')
+                            <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="grid gap-5 md:grid-cols-3">

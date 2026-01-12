@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Restaurant extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -19,12 +21,20 @@ class Restaurant extends Model
         'delivery_fee',
         'avg_prep_time',
         'status',
+        'photo_path',
     ];
 
     protected $casts = [
         'delivery_fee' => 'decimal:2',
         'avg_prep_time' => 'integer',
     ];
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path
+            ? asset('storage/' . $this->photo_path)
+            : null;
+    }
 
     public function menuItems(): HasMany
     {
