@@ -60,6 +60,10 @@ class RestaurantController extends Controller
             'avg_prep_time' => 'nullable|integer|min:5|max:240',
             'status' => 'required|in:open,closed,paused',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'photo.image' => 'The photo must be an image file.',
+            'photo.mimes' => 'The photo must be a JPG or PNG file.',
+            'photo.max' => 'The photo must not be larger than 2MB.',
         ]);
 
         $photoPath = null;
@@ -98,9 +102,23 @@ class RestaurantController extends Controller
             'avg_prep_time' => 'nullable|integer|min:5|max:240',
             'status' => 'required|in:open,closed,paused',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'photo.image' => 'The photo must be an image file.',
+            'photo.mimes' => 'The photo must be a JPG or PNG file.',
+            'photo.max' => 'The photo must not be larger than 2MB.',
         ]);
 
         $photoPath = $restaurant->photo_path;
+        
+        // Handle photo removal
+        if ($request->input('remove_photo') == '1') {
+            if ($restaurant->photo_path) {
+                Storage::disk('public')->delete($restaurant->photo_path);
+            }
+            $photoPath = null;
+        }
+        
+        // Handle new photo upload
         if ($request->hasFile('photo')) {
             if ($restaurant->photo_path) {
                 Storage::disk('public')->delete($restaurant->photo_path);

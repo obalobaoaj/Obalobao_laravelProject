@@ -255,7 +255,18 @@
 
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Photo (JPG/PNG, max 2MB)</label>
-                        <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
+                        <div id="photo-preview-add" class="mb-3 hidden">
+                            <label class="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400">Selected photo:</label>
+                            <div class="relative inline-block">
+                                <img id="preview-image-add" src="" alt="Preview" class="h-20 w-20 rounded-lg object-cover shadow-md border border-neutral-200 dark:border-neutral-700">
+                                <button type="button" onclick="clearPhotoAdd()" class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file" name="photo" id="photo-input-add" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
                         @error('photo')
                             <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>
                         @enderror
@@ -501,21 +512,36 @@
 
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-neutral-700 dark:text-neutral-300">Photo (JPG/PNG, max 2MB)</label>
-                        <div class="mb-3 flex items-center gap-4">
-                            @if($restaurant->photo_url)
-                                <img src="{{ $restaurant->photo_url }}" alt="{{ $restaurant->name }}" class="h-16 w-16 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-neutral-800">
-                                <div>
-                                    <p class="text-xs font-medium text-neutral-600 dark:text-neutral-400">Current photo</p>
-                                    <p class="text-xs text-neutral-500 dark:text-neutral-500">{{ basename($restaurant->photo_path) }}</p>
-                                </div>
-                            @else
-                                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg font-bold text-white shadow-md ring-2 ring-white dark:ring-neutral-800">
-                                    {{ strtoupper(mb_substr($restaurant->name, 0, 1)) }}
-                                </div>
-                                <p class="text-xs text-neutral-500 dark:text-neutral-400">No photo uploaded</p>
-                            @endif
+                        <div id="current-photo-{{ $restaurant->id }}" class="mb-3">
+                            <label class="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400">Current photo:</label>
+                            <div class="relative inline-block">
+                                @if($restaurant->photo_url)
+                                    <img src="{{ $restaurant->photo_url }}" alt="{{ $restaurant->name }}" class="h-20 w-20 rounded-lg object-cover shadow-md border border-neutral-200 dark:border-neutral-700">
+                                @else
+                                    <div class="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white shadow-md border border-neutral-200 dark:border-neutral-700">
+                                        {{ strtoupper(mb_substr($restaurant->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <button type="button" onclick="clearPhotoEdit{{ $restaurant->id }}()" class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
+                        <div id="photo-preview-{{ $restaurant->id }}" class="mb-3 hidden">
+                            <label class="mb-1 block text-xs font-medium text-emerald-600 dark:text-emerald-400">New photo selected:</label>
+                            <div class="relative inline-block">
+                                <img id="preview-image-{{ $restaurant->id }}" src="" alt="Preview" class="h-20 w-20 rounded-lg object-cover shadow-md border border-neutral-200 dark:border-neutral-700">
+                                <button type="button" onclick="clearPhotoEdit{{ $restaurant->id }}()" class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file" name="photo" id="photo-input-{{ $restaurant->id }}" accept=".jpg,.jpeg,.png" class="ios-input w-full rounded-2xl border-0 bg-white/80 px-4 py-3.5 text-sm shadow-sm backdrop-blur-sm transition-all placeholder:text-neutral-400 focus:bg-white focus:shadow-md dark:bg-neutral-800/80 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-800">
+                        <input type="hidden" name="remove_photo" id="remove-photo-{{ $restaurant->id }}" value="0">
                         @error('photo')
                             <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>
                         @enderror
@@ -552,5 +578,125 @@
             </div>
         </dialog>
     @endforeach
+
+    <script>
+        // Clear photo function for add form
+        function clearPhotoAdd() {
+            const photoInputAdd = document.getElementById('photo-input-add');
+            const photoPreviewAdd = document.getElementById('photo-preview-add');
+            if (photoInputAdd) {
+                photoInputAdd.value = '';
+                photoPreviewAdd.classList.add('hidden');
+            }
+        }
+
+        // Photo preview for add form
+        const photoInputAdd = document.getElementById('photo-input-add');
+        const photoPreviewAdd = document.getElementById('photo-preview-add');
+        const previewImageAdd = document.getElementById('preview-image-add');
+
+        if (photoInputAdd) {
+            photoInputAdd.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
+                        alert('Please select a JPG or PNG image file.');
+                        e.target.value = '';
+                        photoPreviewAdd.classList.add('hidden');
+                        return;
+                    }
+
+                    // Validate file size (2MB = 2097152 bytes)
+                    if (file.size > 2097152) {
+                        alert('File size must be less than 2MB.');
+                        e.target.value = '';
+                        photoPreviewAdd.classList.add('hidden');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImageAdd.src = e.target.result;
+                        photoPreviewAdd.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    photoPreviewAdd.classList.add('hidden');
+                }
+            });
+        }
+
+        // Photo preview for edit forms
+        @foreach ($restaurants as $restaurant)
+            // Clear photo function for edit form {{ $restaurant->id }}
+            function clearPhotoEdit{{ $restaurant->id }}() {
+                const photoInput{{ $restaurant->id }} = document.getElementById('photo-input-{{ $restaurant->id }}');
+                const photoPreview{{ $restaurant->id }} = document.getElementById('photo-preview-{{ $restaurant->id }}');
+                const currentPhoto{{ $restaurant->id }} = document.getElementById('current-photo-{{ $restaurant->id }}');
+                const removePhoto{{ $restaurant->id }} = document.getElementById('remove-photo-{{ $restaurant->id }}');
+                if (photoInput{{ $restaurant->id }}) {
+                    photoInput{{ $restaurant->id }}.value = '';
+                    // If preview is visible, we're clearing a new selection - show current photo again
+                    if (!photoPreview{{ $restaurant->id }}.classList.contains('hidden')) {
+                        photoPreview{{ $restaurant->id }}.classList.add('hidden');
+                        currentPhoto{{ $restaurant->id }}.classList.remove('hidden');
+                        removePhoto{{ $restaurant->id }}.value = '0';
+                    } else {
+                        // Clearing current photo - mark for removal and hide it
+                        removePhoto{{ $restaurant->id }}.value = '1';
+                        currentPhoto{{ $restaurant->id }}.classList.add('hidden');
+                    }
+                }
+            }
+
+            const photoInput{{ $restaurant->id }} = document.getElementById('photo-input-{{ $restaurant->id }}');
+            const photoPreview{{ $restaurant->id }} = document.getElementById('photo-preview-{{ $restaurant->id }}');
+            const currentPhoto{{ $restaurant->id }} = document.getElementById('current-photo-{{ $restaurant->id }}');
+            const previewImage{{ $restaurant->id }} = document.getElementById('preview-image-{{ $restaurant->id }}');
+            const removePhoto{{ $restaurant->id }} = document.getElementById('remove-photo-{{ $restaurant->id }}');
+
+            if (photoInput{{ $restaurant->id }}) {
+                photoInput{{ $restaurant->id }}.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Reset remove flag when new file is selected
+                        if (removePhoto{{ $restaurant->id }}) {
+                            removePhoto{{ $restaurant->id }}.value = '0';
+                        }
+
+                        // Validate file type
+                        if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
+                            alert('Please select a JPG or PNG image file.');
+                            e.target.value = '';
+                            photoPreview{{ $restaurant->id }}.classList.add('hidden');
+                            currentPhoto{{ $restaurant->id }}.classList.remove('hidden');
+                            return;
+                        }
+
+                        // Validate file size (2MB = 2097152 bytes)
+                        if (file.size > 2097152) {
+                            alert('File size must be less than 2MB.');
+                            e.target.value = '';
+                            photoPreview{{ $restaurant->id }}.classList.add('hidden');
+                            currentPhoto{{ $restaurant->id }}.classList.remove('hidden');
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage{{ $restaurant->id }}.src = e.target.result;
+                            photoPreview{{ $restaurant->id }}.classList.remove('hidden');
+                            currentPhoto{{ $restaurant->id }}.classList.add('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        photoPreview{{ $restaurant->id }}.classList.add('hidden');
+                        currentPhoto{{ $restaurant->id }}.classList.remove('hidden');
+                    }
+                });
+            }
+        @endforeach
+    </script>
 </x-layouts.app>
 
